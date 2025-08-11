@@ -1,0 +1,28 @@
+rf_model <- randomForest(
+  x = data[, 2:ncol(data)],  # 排除sample和group列
+  y = as.factor(data$group),
+  ntree = 300,                # 增加树的数量提升重要性稳定性
+  mtry = floor(sqrt(ncol(data)-1)),  # mtry = sqrt(特征数)
+  nodesize = 10,                # 增大终端节点样本量，增强筛选严格性
+  importance = TRUE,           # 必须开启重要性计算
+  #cutoff = c(0.8, 0.2),        # 针对类别不平衡调整分类阈值
+  do.trace = 100               # 每100棵树显示进度
+)
+pdf("ECM_forest.pdf",5.5,5.5)
+plot(rf_model)
+dev.off()
+# 提取变量重要性（使用MeanDecreaseGini）
+var_imp <- importance(rf_model, type = 2, scale = TRUE) %>% 
+  as.data.frame() %>%
+  arrange(desc(MeanDecreaseGini))
+var_imp
+
+res<-rfcv(trainx=data[,-1],trainy=data[,1],
+            cv.fold=10,
+            recursive=T
+)
+res$n.var#变量个数
+res$error.cv #错误率
+pdf('ECM_error_RF.pdf',5.5,5.5)
+with(res,plot(n.var,error.cv,type="o",lwd=2))
+dev.off()
