@@ -1,22 +1,22 @@
 results <- rfe(
-  x = data[, 2:ncol(data)],  # 特征矩阵（排除分组列）
-  y = data$group,            # 响应变量
-  sizes = seq(1, ncol(data)-1, by = 1), # 重点评估1-20个基因的小规模子集
+  x = data[, 2:ncol(data)],  # Feature matrix (excluding the group column)
+  y = data$group,            # Response variable
+  sizes = seq(1, ncol(data)-1, by = 1), # Evaluate subsets of genes from 1 to 20
   rfeControl = rfeControl(
     functions = caretFuncs,
     method = "cv"),
   method = "svmRadial"
 )
-# 提取最优基因数量
+# Extract the optimal number of genes
 optimal_size <- results$optsize
 cat("Optimal number of features:", optimal_size, "\n")
 
-# 获取最终选择的基因列表
+# Obtain the list of selected genes
 selected_genes <- predictors(results)
 print(selected_genes)
 
 write.csv(selected_genes, file = 'ECM_svm_rfe_gene.csv')
-# SVM-RFE结果简单可视化
-pdf("ECM_svm_rfe_error.pdf",5.5,5.5)
+# Simple visualization of SVM-RFE results
+pdf("ECM_svm_rfe_error.pdf", 5.5, 5.5)
 plot(results, type = c("o"), xgap.axis = 1)
 dev.off()
