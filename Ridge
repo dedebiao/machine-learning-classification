@@ -1,0 +1,33 @@
+install.packages(c("glmnet", "tidyverse", "psych"))
+# ==============================================================================
+# Ridge Regression for Extracellular matrix Risk Signatures
+# ==============================================================================
+
+# Load required packages
+library(glmnet)   
+library(tidyverse) 
+library(psych)     
+
+#Input File: The grouping labels and the expression matrix of eight genes are included
+data
+target_cols <- c('group','SPARC','COL1A1','ANGPTL2','THY1','COL5A1','LRRC15','NID2','THBS3')
+data <- data[, target_cols]
+
+X <- data[, 2:ncol(data)] %>% as.matrix()
+y <- data$group
+
+# alpha = 0: Pure Ridge regression (L2 regularization, no feature zeroing)
+# standardize = TRUE: Auto-scale all gene features to mean=0, SD=1 for fair coefficient comparison
+# nfolds = 10: Split dataset into 10 subsets for cross-validation to select optimal lambda
+cv_ridge <- cv.glmnet(X, y, alpha = 0, standardize = TRUE, nfolds = 10)
+
+pdf('Ridge_lambda.pdf', width = 6.5, height = 5)
+plot(cv_ridge$glmnet.fit, xvar = "lambda", label = FALSE)
+legend(
+  "topright", 
+  legend = colnames(X), 
+  lty = 1, 
+  col = 1:ncol(X), 
+  cex = 0.8
+)
+dev.off() 
